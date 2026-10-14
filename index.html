@@ -277,7 +277,8 @@ button.hs-chip:active{transform:scale(.95)}
 .tag.scope{background:var(--panel-2)}
 .streak{display:inline-flex;align-items:center;gap:3px;font-weight:700;color:var(--accent)}
 .streak .ic{width:12px;height:12px;vertical-align:0}
-.xp-pill{font-family:var(--f-pixel);font-size:12px;font-weight:700;color:var(--gold-ink);background:var(--gold);padding:3px 7px;border-radius:4px;box-shadow:0 2px 0 var(--gold-deep);white-space:nowrap;font-variant-numeric:tabular-nums}
+.xp-pill small{display:block;font-size:8.5px;font-weight:400;line-height:1.1;opacity:.85;margin-top:1px}
+.xp-pill{text-align:center;font-family:var(--f-pixel);font-size:12px;font-weight:700;color:var(--gold-ink);background:var(--gold);padding:3px 7px;border-radius:4px;box-shadow:0 2px 0 var(--gold-deep);white-space:nowrap;font-variant-numeric:tabular-nums}
 .quest.done .xp-pill{background:transparent;color:var(--faint);box-shadow:none;outline:1.5px dashed var(--line)}
 .more{width:30px;height:30px;display:grid;place-items:center;padding:0;border:0;border-radius:4px;background:transparent;color:var(--muted);cursor:pointer}
 .more:hover,.more[aria-expanded=true]{background:var(--panel-2);color:var(--ink)}
@@ -630,6 +631,21 @@ body.is-dragging .cal-ev,body.is-dragging .cal-more{pointer-events:none}
 .stack hr{border:0;border-top:2px dashed var(--line);width:100%;margin:6px 0}
 .create-art{width:104px;height:104px;margin:0 auto;animation:drop .8s cubic-bezier(.3,1.5,.5,1)}
 .create-art svg{width:100%;height:100%;display:block}
+.help{gap:12px}
+.help-nav{display:flex;flex-wrap:wrap;gap:6px}
+.help-nav button{font:inherit;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;border:1.5px solid var(--line);color:var(--ink);background:var(--panel-2);cursor:pointer}
+.help-nav button:hover{border-color:var(--muted)}
+.help-sec{display:grid;gap:8px;padding:12px 14px;border:1.5px solid var(--line);border-radius:var(--r);background:color-mix(in srgb,var(--panel-2) 60%,var(--panel));scroll-margin-top:8px}
+.help-sec h3{font-size:15px}
+.help-sec p{font-size:13.5px;line-height:1.55;color:var(--muted)}
+.help-sec p b{color:var(--ink)}
+.rules{width:100%;border-collapse:collapse;font-size:12.5px}
+.rules th,.rules td{padding:5px 8px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.rules thead th{font-size:11px;color:var(--muted);font-weight:700}
+.rules tbody th{font-weight:700;white-space:nowrap}
+.rules tr:last-child td,.rules tr:last-child th{border-bottom:0}
+.ng.calm{border-color:var(--line);background:var(--panel-2)}
+.link-btn{font:inherit;font-size:inherit;padding:0;border:0;background:none;color:var(--ink);font-weight:700;text-decoration:underline;text-decoration-style:dashed;text-underline-offset:2px;cursor:pointer}
 .range-row{display:flex;align-items:center;gap:10px}
 .range-row input{flex:1;accent-color:var(--accent)}
 .range-row output{font-family:var(--f-pixel);font-weight:700;min-width:3ch;text-align:right}
@@ -855,6 +871,7 @@ body.is-dragging [data-drop].drop-over{outline:3px solid var(--gold);background:
       <span class="date" id="dateLabel"></span>
       <span class="sync" id="sync" data-state="loading">불러오는 중</span>
       <button class="btn primary small" id="planBtn" type="button" data-action="plan-wizard">계획 세우기</button>
+      <button class="icon-btn" id="helpBtn" type="button" data-action="help" aria-label="게임 규칙" title="게임 규칙"></button>
       <button class="icon-btn" id="soundBtn" type="button" data-action="sound" aria-pressed="true" aria-label="효과음"></button>
       <button class="icon-btn" id="settingsBtn" type="button" data-action="settings" aria-label="설정"></button>
     </div>
@@ -1215,6 +1232,7 @@ const ICON = {
   dots: '<svg viewBox="0 0 16 4" aria-hidden="true" focusable="false"><rect x="1" y="0.5" width="3" height="3" fill="currentColor"/><rect x="6.5" y="0.5" width="3" height="3" fill="currentColor"/><rect x="12" y="0.5" width="3" height="3" fill="currentColor"/></svg>',
   soundOn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19.2 5.8a9 9 0 0 1 0 12.4"/></svg>',
   soundOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z" fill="currentColor"/><path d="M17 9.5l5 5M22 9.5l-5 5"/></svg>',
+  help: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.3"/><path d="M9.2 9.5a2.9 2.9 0 1 1 4.1 2.6c-.9.5-1.3 1.1-1.3 2.1"/><circle cx="12" cy="17.3" r=".5" fill="currentColor"/></svg>',
   gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>',
 };
 
@@ -1833,7 +1851,7 @@ function questCard(q, ctx = {}) {
         ${ctx.showPlan && !done && !q.repeat ? planSelect(q) : ''}
       </div>
     </div>
-    <span class="xp-pill">+${xpOf(q)}</span>
+    <span class="xp-pill" title="${xpOf(q)} EXP · ${goldOf(xpOf(q))} G">+${xpOf(q)}<small>${goldOf(xpOf(q))} G</small></span>
     <button class="more" type="button" id="more-${q.id}" data-action="more" aria-expanded="${menu}" aria-label="메뉴: ${esc(q.title)}">${ICON.dots}</button>
     ${menu ? actionsRow(q, done) : ''}
   </li>`;
@@ -1860,7 +1878,7 @@ function headToday() {
   const bonus = items.length >= 3 && !state.perfect.includes(today);
   const canFill = L.total < cap * 0.6 && pendingPool().length > 0;
   const text = left.length
-    ? `남은 퀘스트 <b>${left.length}개</b> · 모두 끝내면 <b class="gold-t">+${fmt(pot + (bonus ? PERFECT_XP : 0))} EXP</b>${bonus ? `<span class="brief-sub">오늘 할 일(습관 포함)을 하나도 남김없이 끝내면 퍼펙트 보너스 <b class="gold-t">+${PERFECT_XP} EXP</b>를 더 받아요. 위 숫자에 이미 들어 있어요.</span>` : ''}`
+    ? `남은 퀘스트 <b>${left.length}개</b> · 모두 끝내면 <b class="gold-t">+${fmt(pot + (bonus ? PERFECT_XP : 0))} EXP · +${fmt(goldOf(pot + (bonus ? PERFECT_XP : 0)))} G</b>${bonus ? `<span class="brief-sub">오늘 할 일(습관 포함)을 하나도 남김없이 끝내면 퍼펙트 보너스 <b class="gold-t">+${PERFECT_XP} EXP</b>를 더 받아요. 위 숫자에 이미 들어 있어요.</span>` : ''}`
     : items.length ? '오늘의 퀘스트를 모두 끝냈어요. 푹 쉬어도 좋아요.' : '아직 오늘 할 일이 없어요. 계획 세우기로 한 번에 나누거나 아래에서 바로 추가해 보세요.';
   return `<div class="brief window"><div><p class="pix-label">Today's briefing</p><p class="brief-text">${text}</p></div>${canFill ? `<button class="btn gold" type="button" data-action="fill-today"><span class="ic">${ICON.bolt}</span>남은 스태미나로 오늘 채우기</button>` : ''}</div>`;
 }
@@ -2300,7 +2318,7 @@ function renderShop(D) {
   $('#goldChip').innerHTML = `<span class="ic">${ICON.coin}</span>${fmt(D.gold)} G`;
   if (!document.getElementById('tcRing')) tcBuild(); else tcPaint();
   const n = state.closet.length;
-  $('#gachaNote').textContent = n >= ITEMS.length ? `컬렉션 완성! ${n} / ${ITEMS.length}` : `컬렉션 ${n} / ${ITEMS.length} · 퀘스트 EXP의 5분의 1이 골드로 쌓여요. 얻은 아이템은 캐릭터를 눌러 입을 수 있어요.`;
+  $('#gachaNote').innerHTML = `${n >= ITEMS.length ? `컬렉션 완성! ${n} / ${ITEMS.length}` : `컬렉션 ${n} / ${ITEMS.length}`} · 골드는 퀘스트 EXP의 5분의 1씩 쌓여요. 얻은 아이템은 캐릭터를 눌러 입을 수 있어요. <button class="link-btn" type="button" data-action="help" data-sec="gold">규칙 보기</button>`;
 }
 document.addEventListener('pointerdown', ev => {
   tcPtr = ev.pointerType || 'mouse';
@@ -2417,7 +2435,7 @@ function showNewGame() {
   $('#panelBody').innerHTML = '<p class="loading">새 모험가를 기다리는 중이에요.</p>';
   $('#statsBox').innerHTML = '<div class="box-head"><h3>능력치</h3></div><p class="note">모험을 시작하면 몸·머리·마음 능력치가 쌓여요.</p>';
   $('#chartBox').innerHTML = '<div class="box-head"><h3>최근 7일</h3></div><p class="note">아직 기록이 없어요.</p>';
-  $('#gachaBox').innerHTML = ''; $('#goldChip').innerHTML = ''; $('#gachaNote').textContent = ''; tcSel = null; tcHover = null;
+  $('#gachaBox').innerHTML = ''; $('#goldChip').innerHTML = ''; $('#gachaNote').innerHTML = ''; tcSel = null; tcHover = null;
   $('#heroName').textContent = '새 모험가'; $('#heroTitle').textContent = '견습 모험가'; $('#gearHint').textContent = ''; $('#lvNum').textContent = '1';
   ['#xpText', '#goldNum', '#totalNum'].forEach(s => { const el = $(s); el._tw = (el._tw || 0) + 1; });
   $('#xpText').textContent = '0 / 100'; $('#xpFill').style.width = '0%';
@@ -3136,6 +3154,8 @@ document.addEventListener('click', ev => {
     return;
   }
   if (act === 'modal-close') { closeModal(); return; }
+  if (act === 'help') { showHelp(a.dataset.sec); return; }
+  if (act === 'help-go') { const el = document.getElementById('help-' + a.dataset.sec); if (el) el.scrollIntoView({ block: 'start', behavior: RM.matches ? 'auto' : 'smooth' }); return; }
   if (act === 'sound') { soundOn = !soundOn; lsSet('questlog.sound', soundOn ? 'on' : 'off'); paintSound(); if (soundOn) sfx('add'); return; }
   if (act === 'newgame') {
     if (!resetArmed) { resetArmed = true; a.textContent = '정말 새로 시작할까요? 한 번 더 누르세요'; return; }
@@ -3703,6 +3723,60 @@ function closeModal() {
   m.dataset.kind = '';
   resetArmed = false;
 }
+function showHelp(sec) {
+  const D = state ? derive() : null, cap = state ? state.settings.stamina : 100;
+  const row = (...c) => `<tr>${c.map((x, i) => (i ? `<td>${x}</td>` : `<th scope="row">${x}</th>`)).join('')}</tr>`;
+  const xpRows = [1, 2, 3, 4].map(d => row(DIFF[d].name, `${DIFF[d].xp} EXP`, `${goldOf(DIFF[d].xp)} G`, `${DIFF[d].sta}`)).join('');
+  const multRows = [['일일', 1], ['주간', MULT.weekly], ['월간', MULT.monthly], ['장기 목표 단계', MULT.step]].map(([n, m]) => row(n, `×${m}`, `보통 기준 ${Math.round(20 * m)} EXP · ${goldOf(Math.round(20 * m))} G`)).join('');
+  const boxRows = BOXES.map(b => row(b.name, `${b.cost} G`, ['C', 'R', 'E'].filter(k => b.odds[k]).map(k => `<span class="rar ${k}">${RARITY[k].name} ${b.odds[k]}%</span>`).join(' '))).join('');
+  const rankRows = RANKS.map(([l, n], i) => row(`Lv ${l}${RANKS[i + 1] ? `–${RANKS[i + 1][0] - 1}` : '+'}`, n)).join('');
+  const unlockRows = UNLOCKS.reduce((m, [l, n]) => { (m[l] = m[l] || []).push(n); return m; }, {});
+  openModal(`<div class="stack help">
+    <p class="pix-label">How to play</p>
+    <h2 class="modal-title" id="modalTitle">게임 규칙</h2>
+    <nav class="help-nav">${[['xp', '경험치·레벨'], ['gold', '골드·보물 상자'], ['sta', '스태미나'], ['bonus', '보너스'], ['stat', '능력치·직업'], ['look', '꾸미기 해금']].map(([k, n]) => `<button type="button" data-action="help-go" data-sec="${k}">${n}</button>`).join('')}</nav>
+
+    <section class="help-sec" id="help-xp"><h3>경험치와 레벨</h3>
+      <p>퀘스트를 완료하면 난이도만큼 EXP를 받아요. 완료를 취소하면 다시 빠져요.</p>
+      <table class="rules"><thead><tr><th>난이도</th><th>EXP</th><th>골드</th><th>스태미나</th></tr></thead><tbody>${xpRows}</tbody></table>
+      <p>기간이 길수록 배율이 붙어요.</p>
+      <table class="rules"><thead><tr><th>종류</th><th>배율</th><th>예시</th></tr></thead><tbody>${multRows}</tbody></table>
+      <p>장기 목표(에픽)를 클리어하면 <b>200 EXP + 단계당 40 EXP</b>를 한 번에 받아요. 매일 습관은 체크한 날마다 일일 퀘스트와 같은 EXP를 줘요.</p>
+      <p>레벨업에 필요한 EXP는 Lv 1→2가 100이고, 레벨마다 50씩 늘어나요(Lv 2→3은 150, Lv 3→4는 200…).${D ? ` 지금은 Lv ${D.lv}이고 다음 레벨까지 ${fmt(D.need - D.into)} EXP 남았어요.` : ''}</p>
+    </section>
+
+    <section class="help-sec" id="help-gold"><h3>골드와 보물 상자</h3>
+      <p>골드는 따로 모으는 게 아니라 <b>받는 EXP의 5분의 1</b>이 자동으로 같이 들어와요. 보통 퀘스트 하나가 4 G, 퍼펙트 데이가 10 G예요. 완료를 취소하면 골드도 같이 빠져요.</p>
+      <table class="rules"><thead><tr><th>상자</th><th>가격</th><th>확률</th></tr></thead><tbody>${boxRows}</tbody></table>
+      <p>상자마다 <b>오늘의 픽업</b>이 하나 있고 매일 바뀌어요. 그 등급이 나오면 절반 확률로 픽업 아이템이 나와요. 아직 없는 아이템이 먼저 나오고, 그 상자에서 다 모은 뒤에 중복이 나오면 가격의 절반을 돌려받아요. 아이템은 모자·옷·등·펫·배경 ${ITEMS.length}종이에요.</p>
+    </section>
+
+    <section class="help-sec" id="help-sta"><h3>스태미나</h3>
+      <p>하루에 감당할 수 있는 양이에요. 지금은 하루 <b>${cap}</b>으로 잡혀 있고 설정에서 바꿀 수 있어요. 퀘스트 하나당 쉬움 10, 보통 20, 어려움 30, 보스 45를 써요. 여러 날에 걸친 일정은 날수로 나눠 잡혀요.</p>
+      <p><b>자동 배분</b>은 날짜를 안 정한 주간·월간 퀘스트와 이번 달 마일스톤을 오늘부터 7일에 이 한도에 맞춰 나눠 넣어요. 한도를 넘긴 날은 경고가 떠요.</p>
+    </section>
+
+    <section class="help-sec" id="help-bonus"><h3>보너스</h3>
+      <p><b>퍼펙트 데이</b>: 그날 할 일(습관 포함)이 3개 이상일 때 하나도 남김없이 끝내면 <b>+${PERFECT_XP} EXP · +${goldOf(PERFECT_XP)} G</b>를 더 받아요. 하루 한 번이에요.</p>
+      <p><b>연속 일수</b>: 하루라도 퀘스트를 완료한 날이 며칠째 이어지는지예요. 캐릭터 옆 불꽃 숫자로 보여요. 습관 카드의 불꽃은 그 습관을 연속으로 한 날수예요.</p>
+    </section>
+
+    <section class="help-sec" id="help-stat"><h3>능력치와 직업</h3>
+      <p>퀘스트는 내용에 따라 ${STATS.map(x => `<b>${x.name}</b>(${x.hint})`).join(', ')} 중 하나로 자동 분류돼요. 카드의 능력치 이름을 누르면 바꿀 수 있어요. 완료한 EXP가 그 능력치에 쌓여서 능력치 레벨이 올라요. Lv 2는 20, Lv 3은 80, Lv 4는 180, Lv 5는 320 EXP처럼 갈수록 더 많이 필요해요.</p>
+      <p>가장 높은 능력치가 직업을 정해요: 몸은 <b>전사</b>, 머리는 <b>마법사</b>, 마음은 <b>치유사</b>. 캐릭터 옷 색도 여기에 따라와요. 칭호는 레벨에 따라 바뀌어요.</p>
+      <table class="rules"><tbody>${rankRows}</tbody></table>
+    </section>
+
+    <section class="help-sec" id="help-look"><h3>꾸미기 해금</h3>
+      <p>성별·피부·짧은 머리·긴 머리·갈색·검정·금발은 처음부터 고를 수 있어요. 나머지는 레벨이 오르면 열려요.</p>
+      <table class="rules"><tbody>${Object.keys(unlockRows).map(l => row(`Lv ${l}`, unlockRows[l].join(', '))).join('')}</tbody></table>
+      <p>모자·옷·날개·펫·배경은 보물 상자에서만 나와요. 기본 배경 3개(초록 들판·별빛 밤·아늑한 방)는 처음부터 쓸 수 있어요.</p>
+    </section>
+
+    <div class="row end"><button class="btn primary" type="button" data-action="modal-close">닫기</button></div>
+  </div>`, 'help', true);
+  if (sec) setTimeout(() => { const el = document.getElementById('help-' + sec); if (el) el.scrollIntoView({ block: 'start' }); }, 30);
+}
 function showSettings() {
   if (!state) return;
   const cap = state.settings.stamina;
@@ -3720,6 +3794,7 @@ function showSettings() {
     <p class="note">AI로 계획을 쪼갤 때 쓰는 코드예요. 이 브라우저에만 저장돼요.</p>` : ''}
     <div class="row end"><button class="btn ghost" type="button" data-action="modal-close">취소</button><button class="btn primary" type="submit">저장</button></div>
     <hr>
+    <section class="ng calm"><div><b>게임 규칙</b><small>경험치·골드·레벨·스태미나·보물 상자가 어떻게 계산되는지 한눈에 봐요.</small></div><button class="btn small" type="button" data-action="help">규칙 보기</button></section>
     <p class="note">${store.mode === 'db' ? '기록은 Claude 계정에 저장돼서 다른 기기에서 이 페이지를 열어도 이어서 할 수 있어요. 내 기록은 나만 볼 수 있어요.' : '지금은 이 브라우저에만 저장되고 있어요. Claude에 로그인한 상태로 이 페이지를 열면 계정에 저장돼요.'}</p>
   </form>`, 'settings', true);
   setTimeout(() => { const n = $('#setName'); if (n) n.focus(); }, 60);
@@ -3911,6 +3986,7 @@ function sfx(name) {
 /* ---------- boot ---------- */
 $('#brandMark').innerHTML = ICON.quest;
 $('#settingsBtn').innerHTML = ICON.gear;
+$('#helpBtn').innerHTML = ICON.help;
 $('#icGold').innerHTML = ICON.coin;
 $('#icFlame').innerHTML = ICON.flame;
 $('#icStar').innerHTML = ICON.star;
