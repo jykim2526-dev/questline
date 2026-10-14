@@ -3,9 +3,11 @@
 할 일을 퀘스트로 바꿔 주는 게임형 플래너. 기록은 각자 브라우저에 저장되고, AI 기능(퀘스트 마스터)은 Cloudflare Worker를 거쳐 Claude API를 불러요.
 
 ```
-index.html        앱 (GitHub Pages가 그대로 보여 줌)
-config.js         Worker 주소 한 줄
-worker/           API 키를 숨겨 두는 프록시 (Cloudflare Worker)
+index.html            앱 (GitHub Pages가 그대로 보여 줌)
+config.js             Worker 주소 한 줄
+manifest.webmanifest  휴대폰 홈 화면에 앱처럼 추가할 때 쓰는 정보
+icon-192.png 등       앱 아이콘 (icon.svg가 원본)
+worker/               API 키를 숨겨 두는 프록시 (Cloudflare Worker)
 ```
 
 API 키는 GitHub에 절대 올리지 않아요. 키는 Cloudflare의 Secret에만 들어가요.
@@ -23,12 +25,8 @@ API 키는 GitHub에 절대 올리지 않아요. 키는 Cloudflare의 Secret에�
 ### 2. GitHub: 저장소 만들고 파일 올리기
 
 1. GitHub에서 **New repository**를 누르고 이름을 `questline`으로, 공개 범위를 **Public**으로 정해요. 무료 계정은 Public이어야 Pages를 쓸 수 있어요.
-2. **Add file → Upload files**를 누르고 이 폴더 안의 파일을 전부 끌어다 놓아요(`worker` 폴더 포함). 그다음 **Commit changes**를 눌러요.
-3. `worker/wrangler.toml`을 열고 연필 아이콘으로 수정해요.
-   ```toml
-   ALLOWED_ORIGIN = "https://내아이디.github.io"
-   ```
-   `/questline` 같은 뒤쪽 경로와 끝의 `/`는 빼요.
+2. **Add file → Upload files**를 누르고 이 폴더 안의 파일을 전부 끌어다 놓아요. 파일 선택 창에서는 폴더를 못 고르니 `worker` 폴더는 Finder에서 끌어다 놓거나, AI를 붙일 때 올려도 돼요. 그다음 **Commit changes**를 눌러요.
+3. `worker/wrangler.toml`의 `ALLOWED_ORIGIN`이 내 Pages 주소의 앞부분(`https://jykim2526-dev.github.io`)과 같은지 확인해요. 이미 채워져 있어요. 아이디가 다르면 연필 아이콘으로 고치면 돼요. `/questline` 같은 뒤쪽 경로와 끝의 `/`는 빼요.
 4. **Settings → Pages**에서 Source를 **Deploy from a branch**로, Branch를 **main / (root)**로 고르고 **Save**를 눌러요.
    1~2분 뒤 `https://내아이디.github.io/questline/` 에서 앱이 열려요. 이때는 아직 AI 기능이 꺼져 있어요.
 
@@ -64,6 +62,8 @@ API 키는 GitHub에 절대 올리지 않아요. 키는 Cloudflare의 Secret에�
 ### 5. 친구에게 보내기
 
 Pages 주소와 연결 코드를 **따로따로** 보내요. 친구 기록은 친구 브라우저에만 저장되고, 서로의 기록은 보이지 않아요.
+
+휴대폰에서는 브라우저 메뉴의 **홈 화면에 추가**를 누르면 아이콘이 생기고 앱처럼 전체 화면으로 열려요. 기록은 설정의 **내보내기 / 가져오기**로 다른 기기에 옮길 수 있어요.
 
 ---
 

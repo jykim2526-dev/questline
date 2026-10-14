@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="할 일을 퀘스트로 바꿔 주는 게임형 플래너">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#151733">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#e7eaff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QUESTLINE">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>QUESTLINE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -645,6 +653,8 @@ body.is-dragging .cal-ev,body.is-dragging .cal-more{pointer-events:none}
 .rules tbody th{font-weight:700;white-space:nowrap}
 .rules tr:last-child td,.rules tr:last-child th{border-bottom:0}
 .ng.calm{border-color:var(--line);background:var(--panel-2)}
+.ng .stack.tight{gap:6px;flex:none}
+.ng .stack.tight .btn{justify-content:center}
 .link-btn{font:inherit;font-size:inherit;padding:0;border:0;background:none;color:var(--ink);font-weight:700;text-decoration:underline;text-decoration-style:dashed;text-underline-offset:2px;cursor:pointer}
 .range-row{display:flex;align-items:center;gap:10px}
 .range-row input{flex:1;accent-color:var(--accent)}
@@ -1498,7 +1508,8 @@ const LS_STATE = 'questlog.state.v1';
 const CLIENT = uid();
 const store = { mode: 'loading', ref: null, writing: false, dirty: false, timer: 0, stamp: 0 };
 const SYNC_TEXT = { loading: '불러오는 중', saved: '저장됨', saving: '저장 중', local: '이 기기에 저장', error: '저장 실패' };
-const SYNC_TIP = { saved: 'Claude 계정에 저장돼요. 이 기록은 나만 볼 수 있어요.', local: '지금은 이 브라우저에만 저장되고 있어요.', error: '저장하지 못했어요. 잠시 후 다시 시도해요.' };
+const SYNC_TIP = { saved: 'Claude 계정에 저장돼요. 이 기록은 나만 볼 수 있어요.', local: '이 브라우저에만 저장돼요. 설정에서 백업할 수 있어요.', error: '저장하지 못했어요. 잠시 후 다시 시도해요.' };
+const inClaude = !!(window.claude && typeof window.claude.use === 'function');
 function setSync(s) { const el = $('#sync'); el.dataset.state = s; el.textContent = SYNC_TEXT[s]; el.title = SYNC_TIP[s] || ''; }
 function save() {
   if (!state) return;
@@ -2269,7 +2280,7 @@ function rollBox(box) {
 const tryOn = (item, look) => Object.assign({}, look || {}, { [item.slot]: item.id });
 /* Shop: the three chests ride a slow 3D turntable; hover (or tap) one to light it up and read its odds and today's pickup. */
 const TC_R = 78, TC_TILT = 12;
-let tcAngle = 0, tcLast = 0, tcRaf = 0, tcHover = null, tcSel = null, tcShown = -1, tcFront = 0, tcPtr = 'mouse';
+let tcAngle = 0, tcLast = 0, tcRaf = 0, tcHover = null, tcSel = null, tcShown = -1, tcFront = 0, tcPtr = 'mouse', tcVisible = true, tcObs = null;
 const tcActive = () => (tcHover ?? tcSel ?? tcFront);
 function tcBuild() {
   $('#gachaBox').innerHTML = `<div class="tc" id="tcStage">
@@ -2280,11 +2291,23 @@ function tcBuild() {
     <div class="tc-info" id="tcInfo" aria-live="polite"></div>`;
   tcShown = -1;
   tcPaint();
+  tcWatch();
   if (!tcRaf) tcRaf = requestAnimationFrame(tcTick);
+}
+// Stop spinning while the shop is scrolled out of view (saves battery on phones); resume when it comes back.
+function tcWatch() {
+  const st = document.getElementById('tcStage');
+  if (!st || !('IntersectionObserver' in window)) return;
+  if (tcObs) tcObs.disconnect();
+  tcObs = new IntersectionObserver(es => {
+    tcVisible = es.some(e => e.isIntersecting);
+    if (tcVisible && !tcRaf) tcRaf = requestAnimationFrame(tcTick);
+  }, { threshold: 0.02 });
+  tcObs.observe(st);
 }
 function tcTick(t) {
   const ring = document.getElementById('tcRing');
-  if (!ring) { tcRaf = 0; tcLast = 0; return; }
+  if (!ring || !tcVisible) { tcRaf = 0; tcLast = 0; return; }
   const dt = tcLast ? Math.min(64, t - tcLast) : 16;
   tcLast = t;
   if (tcHover === null && tcSel === null && !RM.matches && !document.hidden) tcAngle = (tcAngle + dt * 0.02) % 360;
@@ -2529,7 +2552,7 @@ function wzStep1() {
 function srcSection() {
   const rows = wz.srcs.map(s => `<li class="src"><input type="checkbox" id="wz-src-${s.id}" ${wz.useSrc.has(s.id) ? 'checked' : ''}><label for="wz-src-${s.id}"><b>${esc(s.title)}</b><small>${fmt(s.text.length)}자${s.cut ? ' · 앞부분만 저장' : ''} · 이번 계획에 ${wz.useSrc.has(s.id) ? '사용' : '안 씀'}</small></label><button class="x-btn" type="button" data-action="wz-src-del" data-sid="${s.id}" aria-label="${esc(s.title)} 자료 삭제">×</button></li>`).join('');
   return `<section class="wz-sec"><h3>참고 자료 <span class="note">선택</span></h3>
-    <p class="note">${aiReady() ? 'md나 txt 파일처럼 일정이 정리된 문서를 불러오면, 퀘스트 마스터가 읽고 지금 해야 할 일과 달별 마일스톤을 뽑아요.' : '이 화면에서는 AI를 쓸 수 없어서, 불러온 문서의 체크박스 항목(- [ ])만 할 일로 가져와요.'} 자료는 내 기록에만 저장되고 ${MAX_SRC}개까지 둘 수 있어요.</p>
+    <p class="note">${aiReady() ? 'md나 txt 파일처럼 일정이 정리된 문서를 불러오면, 퀘스트 마스터가 읽고 지금 해야 할 일과 달별 마일스톤을 뽑아요.' : '지금은 AI 연결이 꺼져 있어서, 불러온 문서의 체크박스 항목(- [ ])만 할 일로 가져와요.'} 자료는 내 기록에만 저장되고 ${MAX_SRC}개까지 둘 수 있어요.</p>
     ${rows ? `<ul class="src-list">${rows}</ul>` : ''}
     ${wz.paste ? `<div class="paste-box"><label class="field-label" for="wz-pt">자료 이름</label><input class="inp" id="wz-pt" maxlength="60" placeholder="예: 이번 학기 계획 메모" value="${esc(wz.paste.title)}"><label class="field-label" for="wz-px">내용</label><textarea class="inp" id="wz-px" rows="6" placeholder="문서 내용을 그대로 붙여넣으세요">${esc(wz.paste.text)}</textarea><div class="row"><button class="btn small primary" type="button" data-action="wz-paste-save">자료로 저장</button><button class="btn small ghost" type="button" data-action="wz-paste-cancel">취소</button></div></div>` : ''}
     ${wz.srcs.length < MAX_SRC ? `<div class="row"><label class="btn small file-btn">.md·.txt 파일 불러오기<input type="file" id="wz-file" accept=".md,.markdown,.txt,text/plain,text/markdown" multiple></label>${wz.paste ? '' : '<button class="btn small" type="button" data-action="wz-paste-open">직접 붙여넣기</button>'}</div>` : ''}
@@ -2557,7 +2580,7 @@ function wzStep2() {
         ${wz.epics.length > 1 ? `<div><button class="btn small ghost" type="button" data-action="wz-del-epic" data-i="${i}">이 목표 빼기</button></div>` : ''}
       </div>`).join('')}
       ${wz.epics.length < 3 ? '<div><button class="btn small" type="button" data-action="wz-add-epic">장기 목표 하나 더</button></div>' : ''}
-      <p class="note">${aiReady() ? '퀘스트 마스터(Claude)가 마감까지 달별 마일스톤으로 쪼개요. 목표를 비워 두면 참고 자료에서 큰 목표를 찾아 제안해요.' : '이 화면에서는 AI 분할을 쓸 수 없어서 목표만 만들어 둬요. 달별 단계는 장기 목표 탭에서 직접 추가할 수 있어요.'}</p></section>`;
+      <p class="note">${aiReady() ? '퀘스트 마스터(Claude)가 마감까지 달별 마일스톤으로 쪼개요. 목표를 비워 두면 참고 자료에서 큰 목표를 찾아 제안해요.' : '지금은 AI 연결이 꺼져 있어서 목표만 만들어 둬요. 달별 단계는 장기 목표 탭에서 직접 추가할 수 있어요.'}</p></section>`;
   }
   const useAI = aiReady() && (wz.scopes.epic || wz.srcs.some(s => wz.useSrc.has(s.id)));
   const again = !!wz.sim;
@@ -3188,6 +3211,7 @@ document.addEventListener('click', ev => {
       return;
     }
     case 'settings': showSettings(); return;
+    case 'export': exportBackup(); return;
     case 'cycle-draft-stat': statOverride = nextStat(statOverride || guessStat(($('#addTitle') || {}).value || '')); paintHint(); return;
     case 'cycle-stat': if (q) { q.stat = nextStat(q.stat); save(); render(); } return;
     case 'toggle': toggleQuest(id, a); return;
@@ -3286,6 +3310,7 @@ document.addEventListener('change', ev => {
   if (t.id === 'wpUntil') { setSpan(1, t.value); return; }
   if (t.name === 'wzGender' && wz) { wz.gender = t.value; const art = $('#wzArt'); if (art) art.innerHTML = spriteSVG(1, null, { gender: t.value }); return; }
   if (t.id === 'wz-file') { readSourceFiles(t.files); return; }
+  if (t.id === 'importFile') { importBackup(t.files && t.files[0]); t.value = ''; return; }
   if (wz && t.id && t.id.startsWith('wz-s-')) { wzCollect(); paintScopeBar(); return; }
   if (wz && t.dataset.wz) { wizardChange(t); return; }
   if (!state) return;
@@ -3723,6 +3748,44 @@ function closeModal() {
   m.dataset.kind = '';
   resetArmed = false;
 }
+/* Backup file: the whole state wrapped with a marker, so a wrong file is refused. */
+async function exportBackup() {
+  if (!state) return;
+  const data = JSON.stringify({ app: 'questline', format: 1, exported: new Date().toISOString(), hero: state.hero.name, state }, null, 1);
+  const filename = `questline-${(state.hero.name || '모험가').replace(/[\\/:*?"<>|]+/g, '')}-${today}.json`;
+  if (inClaude) {
+    // Inside Claude the viewer saves through the platform's own prompt.
+    let dl = null;
+    try { dl = await window.claude.use('downloads'); } catch (e) { dl = null; }
+    if (!dl) { toast('이 화면에서는 파일로 저장할 수 없어요.'); return; }
+    try { await dl.save({ filename, data }); toast('기록 파일을 저장했어요. 잘 보관해 두세요.'); }
+    catch (err) { if (!err || err.code !== 'declined') toast('파일을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.'); }
+    return;
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+  a.download = filename;
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast('기록 파일을 내려받았어요. 잘 보관해 두세요.');
+}
+async function importBackup(file) {
+  if (!file) return;
+  let next = null, name = '';
+  try {
+    const raw = JSON.parse(await file.text());
+    const src = raw && raw.app === 'questline' && raw.state ? raw.state : raw;
+    next = normalize(clone(src)); name = next ? next.hero.name : '';
+  } catch (e) { next = null; }
+  if (!next) { toast('QUESTLINE 기록 파일이 아니에요.'); return; }
+  const n = next.quests.length;
+  if (!window.confirm(`${name}의 기록(퀘스트 ${n}개)을 가져올까요? 지금 기록은 이 파일 내용으로 바뀌어요.`)) return;
+  state = next;
+  openMenu = null; editing = null; confirmDel = null; calSel = null; groupState.clear();
+  spriteKey = ''; shown = null;
+  closeModal(); save(); renderForm(); render(); sfx('start');
+  toast(`${name}의 기록을 가져왔어요.`);
+}
 function showHelp(sec) {
   const D = state ? derive() : null, cap = state ? state.settings.stamina : 100;
   const row = (...c) => `<tr>${c.map((x, i) => (i ? `<td>${x}</td>` : `<th scope="row">${x}</th>`)).join('')}</tr>`;
@@ -3795,7 +3858,8 @@ function showSettings() {
     <div class="row end"><button class="btn ghost" type="button" data-action="modal-close">취소</button><button class="btn primary" type="submit">저장</button></div>
     <hr>
     <section class="ng calm"><div><b>게임 규칙</b><small>경험치·골드·레벨·스태미나·보물 상자가 어떻게 계산되는지 한눈에 봐요.</small></div><button class="btn small" type="button" data-action="help">규칙 보기</button></section>
-    <p class="note">${store.mode === 'db' ? '기록은 Claude 계정에 저장돼서 다른 기기에서 이 페이지를 열어도 이어서 할 수 있어요. 내 기록은 나만 볼 수 있어요.' : '지금은 이 브라우저에만 저장되고 있어요. Claude에 로그인한 상태로 이 페이지를 열면 계정에 저장돼요.'}</p>
+    <section class="ng calm"><div><b>기록 백업</b><small>퀘스트·레벨·골드·아이템을 파일 하나로 저장해요. 다른 기기나 브라우저에서 가져오기로 이어서 할 수 있어요.</small></div><div class="stack tight"><button class="btn small" type="button" data-action="export">내보내기</button><label class="btn small ghost file-btn">가져오기<input type="file" id="importFile" accept=".json,application/json"></label></div></section>
+    <p class="note">${store.mode === 'db' ? '기록은 Claude 계정에 저장돼서 다른 기기에서 이 페이지를 열어도 이어서 할 수 있어요. 내 기록은 나만 볼 수 있어요.' : inClaude ? '지금은 이 브라우저에만 저장되고 있어요. Claude에 로그인한 상태로 이 페이지를 열면 계정에 저장돼요.' : '기록은 이 브라우저에만 저장돼요. 브라우저 데이터를 지우면 사라지니 가끔 내보내기로 백업해 두세요.'}</p>
   </form>`, 'settings', true);
   setTimeout(() => { const n = $('#setName'); if (n) n.focus(); }, 60);
 }
