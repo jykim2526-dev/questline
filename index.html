@@ -211,6 +211,8 @@ select.inp{padding-right:28px;appearance:none;background-image:linear-gradient(4
 
 /* sections & quest cards */
 .sec{display:grid;gap:10px;margin-top:22px}
+.sec.pool{padding:12px 14px 14px;border:1.5px dashed var(--line);border-radius:var(--r);background:color-mix(in srgb,var(--panel-2) 55%,transparent)}
+.sec.pool .note{margin:0}
 .day-group{margin-top:18px}
 .day-group>summary{list-style:none;cursor:pointer;border-radius:4px;margin:0 -6px;padding:4px 6px}
 .day-group>summary::-webkit-details-marker{display:none}
@@ -1973,10 +1975,10 @@ function bodyWeek() {
   const loose = sortQ(looseInWeek(ws));
   const later = sortQ(state.quests.filter(q => q.scope === 'weekly' && !q.done && q.week > ws));
   const finished = sortQ(state.quests.filter(q => !q.repeat && q.done && slotOf(q) && slotOf(q) >= ws && slotOf(q) < today && liveStep(q)));
-  return `${days.map(d => dayGroup(d, cap)).join('')}
-    <section class="sec" data-drop="w:${ws}"><div class="sec-head"><h2>이번 주 중 · 날짜 미정</h2><span class="count">${loose.filter(q => q.done).length} / ${loose.length}</span></div>
-      ${loose.length ? list(loose, { labelScope: true, inWindow: true, showPlan: true, drag: true }) : '<p class="note">이번 주 안에만 하면 되는 일이 여기 모여요. 날짜를 정하면 위의 그날 묶음으로 옮겨져요.</p>'}
+  return `<section class="sec pool" data-drop="w:${ws}"><div class="sec-head"><h2>이번 주 중 · 날짜 미정</h2><span class="count">${loose.filter(q => q.done).length} / ${loose.length}</span></div>
+      ${loose.length ? list(loose, { labelScope: true, inWindow: true, showPlan: true, drag: true }) : '<p class="note">이번 주 안에만 하면 되는 일이 여기 모여요. 날짜를 정하면 아래 그날 묶음으로 옮겨져요.</p>'}
     </section>
+    ${days.map(d => dayGroup(d, cap)).join('')}
     ${later.length ? `<section class="sec"><div class="sec-head"><h2>다음 주 이후</h2><span class="count">${later.length}</span></div>${list(later, { showPlan: true, drag: true })}</section>` : ''}
     ${finishedBox('wk-done', '이번 주에 이미 끝낸 일', finished)}`;
 }
@@ -2117,11 +2119,11 @@ function bodyMonth() {
   const later = sortQ(state.quests.filter(q => q.scope === 'monthly' && !q.done && q.month > m));
   const finished = sortQ(state.quests.filter(q => !q.repeat && q.done && slotOf(q) && monthOf(slotOf(q)) === m && slotOf(q) < today && liveStep(q)));
   const prog = [ms.length && `이번 달 마일스톤 ${ms.filter(q => q.done).length} / ${ms.length}`, mq.length && `월간 퀘스트 ${mq.filter(q => q.done).length} / ${mq.length}`].filter(Boolean).join(' · ');
-  return `${calSel ? calDayPanel(calSel) : ''}<section class="sec"><div class="sec-head"><h2>이번 달 일정</h2><span class="count">${prog}</span></div>
-      <div class="groups">${weeks.map(w => weekGroup(w, cap)).join('')}</div>
+  return `${calSel ? calDayPanel(calSel) : ''}<section class="sec pool" data-drop="m:${m}"><div class="sec-head"><h2>이번 달 중 · 날짜 미정</h2><span class="count">${loose.filter(q => q.done).length} / ${loose.length}</span></div>
+      ${loose.length ? list(loose, { labelScope: true, inWindow: true, showPlan: true, drag: true }) : empty('이번 달 안에 할 일이 여기 모여요', '날짜나 주를 정하면 아래 그 주 묶음으로 옮겨져요. 장기 목표를 달별로 쪼개면 이번 달 마일스톤도 여기나 위에 나타나요.')}
     </section>
-    <section class="sec" data-drop="m:${m}"><div class="sec-head"><h2>이번 달 중 · 날짜 미정</h2><span class="count">${loose.filter(q => q.done).length} / ${loose.length}</span></div>
-      ${loose.length ? list(loose, { labelScope: true, inWindow: true, showPlan: true, drag: true }) : empty('이번 달 안에 할 일이 여기 모여요', '날짜나 주를 정하면 위의 그 주 묶음으로 옮겨져요. 장기 목표를 달별로 쪼개면 이번 달 마일스톤도 여기나 위에 나타나요.')}
+    <section class="sec"><div class="sec-head"><h2>이번 달 일정</h2><span class="count">${prog}</span></div>
+      <div class="groups">${weeks.map(w => weekGroup(w, cap)).join('')}</div>
     </section>
     ${later.length ? `<section class="sec"><div class="sec-head"><h2>다음 달 이후</h2><span class="count">${later.length}</span></div>${list(later, { showPlan: true })}</section>` : ''}
     ${finishedBox('mo-done', '이번 달에 이미 끝낸 일', finished)}`;
