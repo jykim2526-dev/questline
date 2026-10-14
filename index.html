@@ -212,9 +212,15 @@ select.inp{padding-right:28px;appearance:none;background-image:linear-gradient(4
 /* sections & quest cards */
 .sec{display:grid;gap:10px;margin-top:22px}
 .day-group{margin-top:18px}
+.day-group>summary{list-style:none;cursor:pointer;border-radius:4px;margin:0 -6px;padding:4px 6px}
+.day-group>summary::-webkit-details-marker{display:none}
+.day-group>summary:hover{background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.day-group .caret{margin-right:6px;color:var(--muted)}
+.day-group[open] .caret{transform:rotate(90deg)}
+.day-group:not([open]){gap:0}
 .day-group .sec-head h2{font-size:16px}
 .day-group .sec-head h2 small,.wk-grp>summary small{font-family:var(--f-pixel);font-size:11px;font-weight:400;color:var(--faint);margin-left:6px}
-.day-group.is-today .sec-head h2::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--gold);margin-right:7px;vertical-align:2px}
+.day-group.is-today .sec-head h2::after{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--gold);margin-left:7px;vertical-align:2px}
 .count.over{color:var(--warn);font-weight:700}
 .day-empty{margin:0;padding:9px 12px;border:1.5px dashed var(--line);border-radius:var(--r)}
 .sec.pulse{animation:secpulse 1s ease-out}
@@ -1947,11 +1953,14 @@ function looseInMonth(mo) {
 function dayGroup(d, cap) {
   const items = dayItemsOf(d), L = dayLoad(d);
   const name = d === today ? '오늘' : d === addDays(today, 1) ? '내일' : `${DOW[dow(d)]}요일`;
-  return `<section class="sec day-group${d === today ? ' is-today' : ''}" id="day-${d}" data-drop="${d}">
-    <div class="sec-head"><h2>${name}<small>${md(d)}</small></h2><span class="count${L.total > cap ? ' over' : ''}">스태미나 ${L.total} / ${cap}</span></div>
+  // Each day folds up; today starts folded here because the 오늘 tab already shows it in full.
+  const gid = 'wd:' + d, open = groupState.has(gid) ? groupState.get(gid) : d !== today;
+  const left = items.filter(q => !isDone(q, d)).length;
+  return `<details class="sec day-group${d === today ? ' is-today' : ''}" id="day-${d}" data-gid="${gid}" data-drop="${d}" ${open ? 'open' : ''}>
+    <summary class="sec-head"><h2><span class="caret"></span>${name}<small>${md(d)}${d === today ? ' · 오늘 탭과 같아요' : ''}</small></h2><span class="count${L.total > cap ? ' over' : ''}">${items.length ? `${left ? `${left}개 남음` : '모두 끝냄'} · ` : ''}스태미나 ${L.total} / ${cap}</span></summary>
     ${items.length ? list(items, { day: d === today ? null : d, labelScope: true, showPlan: true, drag: true, reorder: true }) : '<p class="note day-empty">비어 있어요. 카드를 여기로 끌어 오거나 자동 배분을 눌러 보세요.</p>'}
     ${d === today ? habitStrip(today) : ''}
-  </section>`;
+  </details>`;
 }
 function finishedBox(gid, label, items) {
   if (!items.length) return '';
@@ -3247,7 +3256,7 @@ document.addEventListener('click', ev => {
     }
     case 'pick-day': {
       const g = document.getElementById('day-' + a.dataset.date) || (() => { const f = document.querySelector('[data-gid="wk-done"]'); if (f) f.open = true; return f; })();
-      if (g) { g.scrollIntoView({ behavior: 'smooth', block: 'start' }); g.classList.remove('pulse'); void g.offsetWidth; g.classList.add('pulse'); }
+      if (g) { if (g.tagName === 'DETAILS' && !g.open) { g.open = true; groupState.set(g.dataset.gid, true); } g.scrollIntoView({ behavior: 'smooth', block: 'start' }); g.classList.remove('pulse'); void g.offsetWidth; g.classList.add('pulse'); }
       return;
     }
     case 'auto':
@@ -3349,7 +3358,7 @@ document.addEventListener('change', ev => {
 });
 document.addEventListener('toggle', ev => {
   const d = ev.target;
-  if (d && d.classList && d.classList.contains('grp')) groupState.set(d.dataset.gid, d.open);
+  if (d && d.classList && (d.classList.contains('grp') || d.classList.contains('day-group'))) groupState.set(d.dataset.gid, d.open);
 }, true);
 
 document.addEventListener('submit', ev => {
