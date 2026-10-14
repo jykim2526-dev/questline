@@ -1,0 +1,15 @@
+name = "questline-api"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Cloudflare 대시보드의 Logs 탭에 요청 기록(토큰 수, 오류)을 남겨요.
+[observability]
+enabled = true
+
+[vars]
+# GitHub Pages 주소의 앞부분만 (https://아이디.github.io), 끝에 / 없이.
+ALLOWED_ORIGIN = "https://jykim2526-dev.github.io"
+
+# ANTHROPIC_API_KEY, ACCESS_CODE 는 여기 적지 말고
+# Cloudflare 대시보드의 Settings > Variables and Secrets 에 Secret 으로 넣으세요.

@@ -1,0 +1,14 @@
+{
+  "name": "questline-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.129.0"
+  },
+  "devDependencies": {
+    "wrangler": "4.144.0"
+  }
+}
