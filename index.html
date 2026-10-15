@@ -81,7 +81,8 @@ button{font:inherit;color:inherit}
 
 /* top bar */
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;padding-block:6px 18px}
-.brand{display:flex;align-items:center;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand .sync{margin-left:4px}
 .brand-mark{width:30px;height:30px;display:block;animation:bob 1.4s steps(2) infinite}
 .brand h1{font-family:var(--f-logo);font-weight:400;font-size:30px;line-height:1;letter-spacing:.03em}
 .top-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -95,6 +96,8 @@ button{font:inherit;color:inherit}
 .icon-btn svg{width:20px;height:20px}
 .icon-btn:active{transform:translateY(3px);box-shadow:none}
 .icon-btn[aria-pressed=false]{color:var(--faint)}
+.icon-btn.busy{animation:blink 1s ease-in-out infinite;cursor:progress}
+@keyframes blink{50%{opacity:.45}}
 
 /* layout */
 .layout{display:grid;grid-template-columns:330px minmax(0,1fr);grid-template-areas:"hud board" "extras board";grid-template-rows:auto 1fr;gap:20px 22px;align-items:start}
@@ -867,6 +870,13 @@ body.is-dragging [data-drop].drop-over{outline:3px solid var(--gold);background:
 @media (max-width:520px){
   .brand h1{font-size:25px}
   .date{display:none}
+  .topbar{gap:8px 10px}
+  .brand{gap:8px}
+  .brand h1{font-size:26px}
+  .brand .sync{font-size:11px;padding:2px 8px;margin-left:2px}
+  .top-right{gap:6px}
+  .top-right .icon-btn{width:34px;height:34px}
+  .top-right .icon-btn svg{width:18px;height:18px}
   .quest{gap:6px 10px;padding-left:10px}
   .quest.just-done::after{right:46px}
   .tab .tab-n{font-size:15px}
@@ -884,11 +894,11 @@ body.is-dragging [data-drop].drop-over{outline:3px solid var(--gold);background:
 
 <div class="app" id="app">
   <header class="topbar">
-    <div class="brand"><span class="brand-mark" id="brandMark" aria-hidden="true"></span><h1>QUESTLINE</h1></div>
+    <div class="brand"><span class="brand-mark" id="brandMark" aria-hidden="true"></span><h1>QUESTLINE</h1><span class="sync" id="sync" data-state="loading">불러오는 중</span></div>
     <div class="top-right">
       <span class="date" id="dateLabel"></span>
-      <span class="sync" id="sync" data-state="loading">불러오는 중</span>
       <button class="btn primary small" id="planBtn" type="button" data-action="plan-wizard">계획 세우기</button>
+      <button class="icon-btn" id="gcalBtn" type="button" data-action="gcal-sync" aria-label="구글 캘린더로 보내기" title="구글 캘린더로 보내기" hidden></button>
       <button class="icon-btn" id="helpBtn" type="button" data-action="help" aria-label="게임 규칙" title="게임 규칙"></button>
       <button class="icon-btn" id="soundBtn" type="button" data-action="sound" aria-pressed="true" aria-label="효과음"></button>
       <button class="icon-btn" id="settingsBtn" type="button" data-action="settings" aria-label="설정"></button>
@@ -1250,6 +1260,7 @@ const ICON = {
   dots: '<svg viewBox="0 0 16 4" aria-hidden="true" focusable="false"><rect x="1" y="0.5" width="3" height="3" fill="currentColor"/><rect x="6.5" y="0.5" width="3" height="3" fill="currentColor"/><rect x="12" y="0.5" width="3" height="3" fill="currentColor"/></svg>',
   soundOn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19.2 5.8a9 9 0 0 1 0 12.4"/></svg>',
   soundOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z" fill="currentColor"/><path d="M17 9.5l5 5M22 9.5l-5 5"/></svg>',
+  cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M9 14.5l2 2 4-4"/></svg>',
   help: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.3"/><path d="M9.2 9.5a2.9 2.9 0 1 1 4.1 2.6c-.9.5-1.3 1.1-1.3 2.1"/><circle cx="12" cy="17.3" r=".5" fill="currentColor"/></svg>',
   gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>',
 };
@@ -1334,6 +1345,7 @@ function normalize(s) {
   s.buys = Array.isArray(s.buys) ? s.buys : [];
   s.closet = Array.isArray(s.closet) ? s.closet.filter(id => ITEM_BY[id]) : [];
   s.pulls = Array.isArray(s.pulls) ? s.pulls.slice(0, 30) : [];
+  s.gcalTrash = Array.isArray(s.gcalTrash) ? s.gcalTrash.filter(x => typeof x === 'string') : [];
   s.settings = Object.assign({ stamina: 100 }, s.settings || {});
   s.sources = Array.isArray(s.sources) ? s.sources.filter(x => x && x.id && typeof x.text === 'string').slice(0, 3) : [];
   s.quests = s.quests.filter(q => q && q.id && q.title);
@@ -1346,7 +1358,7 @@ function normalize(s) {
 }
 
 function freshState(name, starter) {
-  const t = today, s = { v: 2, hero: { name, since: t }, quests: [], rewards: [], bank: { xp: 0, gold: 0, stats: {}, log: {} }, perfect: [], spent: 0, buys: [], closet: [], pulls: [], settings: { stamina: 100 } };
+  const t = today, s = { v: 2, hero: { name, since: t }, quests: [], rewards: [], bank: { xp: 0, gold: 0, stats: {}, log: {} }, perfect: [], spent: 0, buys: [], closet: [], pulls: [], gcalTrash: [], settings: { stamina: 100 } };
   s.rewards = [['좋아하는 디저트 먹기', 30], ['드라마 한 편 보기', 50], ['게임 1시간', 60], ['갖고 싶던 물건 사기', 300]].map(([title, cost]) => ({ id: uid(), title, cost }));
   if (starter) {
     const ws = weekStartOf(t), m = monthOf(t), now = Date.now();
@@ -1575,6 +1587,7 @@ async function boot() {
   const use = window.claude && typeof window.claude.use === 'function'
     ? n => Promise.resolve(window.claude.use(n)).catch(() => null)
     : () => Promise.resolve(null);
+  use('mcp').then(m => { mcpApi = m; paintGcal(); });
   use('sample').then(s => {
     sampler = s || webSampler();
     if (!sampler) return;
@@ -1732,6 +1745,7 @@ function tween(el, from, to, dur, delay, f) {
 }
 
 function renderTabs() {
+  paintGcal();
   document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
   $('#panel').setAttribute('aria-labelledby', 'tab-' + tab);
   const ws = weekStartOf(today), m = monthOf(today);
@@ -3103,6 +3117,7 @@ function addStep(eid) {
 function removeQuest(q) {
   const gone = q.scope === 'epic' ? [q, ...stepsOf(q)] : [q];
   gone.forEach(bankQuest);
+  gone.forEach(x => { if (x.gcal && x.gcal.id) state.gcalTrash.push(x.gcal.id); }); // the next calendar sync removes their events
   const ids = new Set(gone.map(x => x.id));
   state.quests = state.quests.filter(x => !ids.has(x.id));
 }
@@ -3189,6 +3204,7 @@ document.addEventListener('click', ev => {
   }
   if (act === 'modal-close') { closeModal(); return; }
   if (act === 'help') { showHelp(a.dataset.sec); return; }
+  if (act === 'gcal-sync') { if ($('#modal') && !$('#modal').hidden) closeModal(); syncCalendar(); return; }
   if (act === 'help-go') { const el = document.getElementById('help-' + a.dataset.sec); if (el) el.scrollIntoView({ block: 'start', behavior: RM.matches ? 'auto' : 'smooth' }); return; }
   if (act === 'sound') { soundOn = !soundOn; lsSet('questlog.sound', soundOn ? 'on' : 'off'); paintSound(); if (soundOn) sfx('add'); return; }
   if (act === 'newgame') {
@@ -3797,6 +3813,88 @@ async function importBackup(file) {
   closeModal(); save(); renderForm(); render(); sfx('start');
   toast(`${name}의 기록을 가져왔어요.`);
 }
+/* ---------- Google Calendar sync (Claude only: the viewer's own connector through the mcp capability) ---------- */
+let mcpApi = null, gcalBusy = false;
+const GCAL = 'Google Calendar';
+const GCAL_COLOR = { BODY: '11', MIND: '9', HEART: '3' };
+function paintGcal() {
+  const b = $('#gcalBtn');
+  if (!b) return;
+  b.hidden = !(mcpApi && state);
+  b.classList.toggle('busy', gcalBusy);
+  b.disabled = gcalBusy;
+}
+const gcalKey = q => [slotOf(q), endOf(q), q.title, q.done ? 1 : 0, q.stat].join('|');
+function gcalInput(q) {
+  const p = q.scope === 'step' ? parentOf(q) : null;
+  return {
+    summary: (q.done ? '✅ ' : '') + q.title,
+    startTime: `${slotOf(q)}T00:00:00`,
+    endTime: `${addDays(endOf(q), 1)}T00:00:00`, // all-day events end on the next midnight
+    allDay: true,
+    availability: 'AVAILABILITY_FREE',
+    useDefaultReminders: false,
+    colorId: GCAL_COLOR[q.stat] || '9',
+    description: `QUESTLINE 퀘스트 · ${SCOPE_NAME[q.scope] || ''} · ${DIFF[q.diff].name} · +${xpOf(q)} EXP${p ? ` · 목표: ${p.title}` : ''}`,
+  };
+}
+function gcalErrText(err) {
+  const c = err && err.code;
+  if (c === 'server_not_connected' || c === 'selection_required') return 'claude.ai 설정 → 커넥터에서 Google Calendar를 연결한 뒤 다시 눌러 주세요.';
+  if (c === 'needs_reauth') return 'Google Calendar 연결이 만료됐어요. claude.ai 설정 → 커넥터에서 다시 연결해 주세요.';
+  if (c === 'not_in_manifest' || c === 'approval_required' || c === 'consent_required' || c === 'blocked_by_policy') return '캘린더 접근을 허용해 주면 동기화할 수 있어요.';
+  if (c === 'tool_error') return `구글 캘린더가 요청을 거절했어요. ${String(err.message || '').slice(0, 80)}`;
+  if (c === 'server_unavailable' || c === 'upstream_error' || c === 'rate_limited' || c === 'cancelled') return '구글 캘린더에 잠시 연결하지 못했어요. 조금 뒤에 다시 눌러 주세요.';
+  if (c === 'not_granted' || c === 'capability_disabled' || c === 'capability_removed') { mcpApi = null; paintGcal(); return '이 화면에서는 캘린더 동기화를 쓸 수 없어요.'; }
+  return '동기화 중 문제가 생겼어요. 조금 뒤에 다시 눌러 주세요.';
+}
+async function syncCalendar() {
+  if (!state || !mcpApi || gcalBusy) return;
+  gcalBusy = true; paintGcal();
+  const call = (tool, input) => mcpApi.callTool(GCAL, tool, input, { cache: false });
+  const gone = err => err && err.code === 'tool_error'; // the event is already missing on the calendar
+  const live = state.quests.filter(q => !q.repeat && q.scope !== 'epic' && liveStep(q));
+  const targets = live.filter(q => (slotOf(q) && endOf(q) >= addDays(today, -7)) || (q.gcal && q.gcal.id)).sort((a, b) => (slotOf(a) || '') < (slotOf(b) || '') ? -1 : 1);
+  const undated = live.filter(q => !q.done && !slotOf(q)).length;
+  const total = targets.length + state.gcalTrash.length;
+  const el = $('#sync'), sayProg = n => { el.dataset.state = 'saving'; el.textContent = `캘린더 동기화 ${n} / ${total}`; };
+  let made = 0, changed = 0, removed = 0, n = 0;
+  try {
+    for (const id of state.gcalTrash.slice()) {
+      sayProg(++n);
+      try { await call('delete_event', { eventId: id, notificationLevel: 'NONE' }); removed++; } catch (err) { if (!gone(err)) throw err; }
+      state.gcalTrash = state.gcalTrash.filter(x => x !== id);
+    }
+    for (const q of targets) {
+      sayProg(++n);
+      const has = !!(q.gcal && q.gcal.id);
+      if (!slotOf(q)) { // lost its date: take it off the calendar
+        if (has) { try { await call('delete_event', { eventId: q.gcal.id, notificationLevel: 'NONE' }); removed++; } catch (err) { if (!gone(err)) throw err; } delete q.gcal; }
+        continue;
+      }
+      const key = gcalKey(q);
+      if (has && q.gcal.key === key) continue;
+      const input = gcalInput(q);
+      if (has) {
+        try { await call('update_event', Object.assign({ eventId: q.gcal.id, notificationLevel: 'NONE' }, input)); q.gcal.key = key; changed++; save(); continue; }
+        catch (err) { if (!gone(err)) throw err; delete q.gcal; } // deleted by hand on the calendar: make it again
+      }
+      const res = await call('create_event', input);
+      const ev = res && res.payload && typeof res.payload === 'object' ? res.payload : null;
+      if (!ev || !ev.id) throw Object.assign(new Error('no id'), { code: 'upstream_error' });
+      q.gcal = { id: ev.id, key }; made++; save();
+    }
+    state.gcalAt = Date.now();
+    save(); setSync(store.mode === 'db' ? 'saved' : 'local'); render();
+    const parts = [`새로 ${made}개`, `고침 ${changed}개`, `뺌 ${removed}개`];
+    toast(`구글 캘린더 동기화 끝 · ${parts.join(' · ')}${undated ? ` · 날짜 없는 ${undated}개는 건너뛰었어요` : ''}`);
+    sfx('coin');
+  } catch (err) {
+    save(); setSync(store.mode === 'db' ? 'saved' : 'local'); render();
+    toast(gcalErrText(err));
+  }
+  gcalBusy = false; paintGcal();
+}
 function showHelp(sec) {
   const D = state ? derive() : null, cap = state ? state.settings.stamina : 100;
   const row = (...c) => `<tr>${c.map((x, i) => (i ? `<td>${x}</td>` : `<th scope="row">${x}</th>`)).join('')}</tr>`;
@@ -3869,6 +3967,7 @@ function showSettings() {
     <div class="row end"><button class="btn ghost" type="button" data-action="modal-close">취소</button><button class="btn primary" type="submit">저장</button></div>
     <hr>
     <section class="ng calm"><div><b>게임 규칙</b><small>경험치·골드·레벨·스태미나·보물 상자가 어떻게 계산되는지 한눈에 봐요.</small></div><button class="btn small" type="button" data-action="help">규칙 보기</button></section>
+    ${mcpApi ? `<section class="ng calm"><div><b>구글 캘린더 동기화</b><small>날짜가 정해진 퀘스트를 내 구글 캘린더에 하루 종일 일정으로 넣어요. 날짜나 제목이 바뀌면 다음 동기화 때 고쳐지고, 지운 퀘스트는 캘린더에서도 빠져요.${state.gcalAt ? ` 마지막 동기화: ${new Date(state.gcalAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' })}` : ''}</small></div><button class="btn small" type="button" data-action="gcal-sync">지금 동기화</button></section>` : ''}
     <section class="ng calm"><div><b>기록 백업</b><small>퀘스트·레벨·골드·아이템을 파일 하나로 저장해요. 다른 기기나 브라우저에서 가져오기로 이어서 할 수 있어요.</small></div><div class="stack tight"><button class="btn small" type="button" data-action="export">내보내기</button><label class="btn small ghost file-btn">가져오기<input type="file" id="importFile" accept=".json,application/json"></label></div></section>
     <p class="note">${store.mode === 'db' ? '기록은 Claude 계정에 저장돼서 다른 기기에서 이 페이지를 열어도 이어서 할 수 있어요. 내 기록은 나만 볼 수 있어요.' : inClaude ? '지금은 이 브라우저에만 저장되고 있어요. Claude에 로그인한 상태로 이 페이지를 열면 계정에 저장돼요.' : '기록은 이 브라우저에만 저장돼요. 브라우저 데이터를 지우면 사라지니 가끔 내보내기로 백업해 두세요.'}</p>
   </form>`, 'settings', true);
@@ -4062,6 +4161,7 @@ function sfx(name) {
 $('#brandMark').innerHTML = ICON.quest;
 $('#settingsBtn').innerHTML = ICON.gear;
 $('#helpBtn').innerHTML = ICON.help;
+$('#gcalBtn').innerHTML = ICON.cal;
 $('#icGold').innerHTML = ICON.coin;
 $('#icFlame').innerHTML = ICON.flame;
 $('#icStar').innerHTML = ICON.star;
