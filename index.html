@@ -28,6 +28,7 @@
   --c-body:#ff6b6b; --c-mind:#5fa8ff; --c-heart:#b98cff; --on-stat:#140f2b;
   --habit:#3fd0b0; --habit-ink:#3fd0b0;
   --r-c:#c9cfe8; --r-r:#5ec8ff; --r-e:#c084ff;
+  --wk-band:rgba(88,98,214,.62); --wk-band-hi:rgba(108,118,232,.78);
   --scrim:rgba(8,9,24,.74);
   --f-logo:"Bagel Fat One","IBM Plex Sans KR",system-ui,sans-serif;
   --f-display:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
@@ -46,6 +47,7 @@
     --c-body:#e04848; --c-mind:#2a78dc; --c-heart:#8a5cf0; --on-stat:#ffffff;
     --habit:#0f9a7f; --habit-ink:#0b7563;
     --r-c:#6d73a3; --r-r:#1f86d1; --r-e:#8a3fe0;
+    --wk-band:rgba(30,36,92,.80); --wk-band-hi:rgba(30,36,92,.92);
     --scrim:rgba(40,44,90,.5);
     color-scheme:light;
   }
@@ -59,6 +61,7 @@
   --c-body:#e04848; --c-mind:#2a78dc; --c-heart:#8a5cf0; --on-stat:#ffffff;
   --habit:#0f9a7f; --habit-ink:#0b7563;
   --r-c:#6d73a3; --r-r:#1f86d1; --r-e:#8a3fe0;
+  --wk-band:rgba(30,36,92,.80); --wk-band-hi:rgba(30,36,92,.92);
   --scrim:rgba(40,44,90,.5);
   color-scheme:light;
 }
@@ -356,7 +359,7 @@ button.hs-chip:active{transform:scale(.95)}
 .cell .pd i{width:4px;height:4px;background:var(--c-mind)}
 .legend{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
 .legend .lg-ev{width:16px;height:9px;border-radius:2px;background:color-mix(in srgb,var(--c-mind) 15%,var(--panel));border-left:2px solid var(--c-mind)}
-.legend .lg-wk{width:16px;height:9px;border-radius:2px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c-mind) 45%,transparent)}
+.legend .lg-wk{width:16px;height:9px;border-radius:2px;background:var(--wk-band)}
 .legend .lg-gap{width:8px}
 /* Calendar: chunky HUD tiles like the week strip, with quests as little pixel badges on top. */
 .cal2{display:grid;gap:4px}
@@ -389,8 +392,10 @@ button.hs-chip:active{transform:scale(.95)}
 .cal-ev.cl{margin-left:0;padding-left:6px;border-top-left-radius:0;border-bottom-left-radius:0}
 .cal-ev.cr{margin-right:0;border-top-right-radius:0;border-bottom-right-radius:0}
 .cal-ev.k-week::before{display:none}
-.cal-ev.k-week{background:transparent;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--sc) 40%,transparent);color:var(--muted);font-weight:500}
-.cal-ev.k-week:hover{background:color-mix(in srgb,var(--sc) 8%,transparent)}
+.cal-ev.k-week{background:var(--wk-band);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 2px 6px rgba(20,22,60,.18);color:#fff;font-weight:600;letter-spacing:0;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.cal-ev.k-week span{text-shadow:0 1px 1px rgba(10,12,40,.35)}
+.cal-ev.k-week:hover{background:var(--wk-band-hi)}
+.cal-ev.k-week.done{background:color-mix(in srgb,var(--wk-band) 45%,transparent);color:rgba(255,255,255,.75);box-shadow:none}
 .cal-ev.k-sum{--sc:var(--muted)}
 .cal-ev.k-late{--sc:var(--warn)}
 .cal-ev.done{background:transparent;color:var(--faint);font-weight:500}
@@ -408,7 +413,7 @@ body.is-dragging .cal-ev,body.is-dragging .cal-more{pointer-events:none}
   .cal-cell{padding:3px 2px 0}
   .cal-ev{height:5px;margin:0 3px;padding:0;border-radius:3px;box-shadow:none;background:color-mix(in srgb,var(--sc) 75%,var(--panel))}
   .cal-ev::before,.cal-ev span{display:none}
-  .cal-ev.k-week{background:transparent;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--sc) 50%,transparent)}
+  .cal-ev.k-week{background:var(--wk-band);box-shadow:none}
   .cal-ev.done{background:color-mix(in srgb,var(--sc) 25%,transparent)}
   .cal-x{display:none}
   .cal-more{margin:0 2px;padding:0 2px;font-size:9px;line-height:13px}
